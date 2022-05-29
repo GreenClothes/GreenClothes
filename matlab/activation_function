@@ -1,0 +1,21 @@
+x = linspace(-2,2,1000);
+
+h1 = 1./(1+exp(-x));
+
+idx1 = find(x>0);
+idx2 = find(x<=0);
+
+h2(idx1) = 1;
+h2(idx2) = 0;
+
+h3(idx1) = x(idx1);
+h3(idx2) = 0;
+
+figure(1)
+plot(x, h1,'k-', x, h2, 'b--', x, h3, 'r-.');
+hold on;
+xlabel('x');
+ylabel('h(x)');
+axis([-2, 2, 0, 2]);
+legend('Sigmoid', 'Step', 'ReLU');
+grid on;
