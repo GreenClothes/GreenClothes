@@ -1,0 +1,106 @@
+#define F_CPU 14.7456E6
+#include <avr/io.h>
+#include <util/delay.h>
+
+// FND letter table, FND port pin
+unsigned char Port_char[] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xd8, 0x80, 0x90,
+							0x88, 0x83, 0xc4, 0xa1, 0x84, 0x8e}; // common anode
+unsigned int Port_fnd[] = {0x1f, 0x2f, 0x4f, 0x8f};
+
+unsigned char key = 0;
+unsigned int count = 0, change = 0;
+
+void Exch_up()
+{
+	key = PIND & 0x04;
+	if(key == 0)
+	{
+		if(count!=9999)
+			count++;
+		_delay_ms(10);
+		change = 1;
+	}
+}
+
+void Exch_down()
+{
+	key = PIND & 0x08;
+	if(key == 0)
+	{
+		if(count!=0)
+			count--;
+		_delay_ms(10);
+		change = 1;
+	}
+}
+
+void get_change()
+{
+	if(change==0 && PIND!=0xff)
+	{
+		Exch_up();
+		Exch_down();
+	}
+	else if(change==1 && PIND==0xff)
+	{
+		change = 0;
+	}
+}
+
+// Function that divides the number of times the switch is pressed by digits
+void Num_divide(unsigned char* divide_num)
+{
+	int buffer=0;
+	
+	divide_num[3] = count/1000;
+	buffer= count%1000;
+	divide_num[2] = buffer/100;
+	buffer= buffer%100;
+	divide_num[1] = buffer/10;
+	divide_num[0] = buffer%10;
+}
+
+void Port_init()
+{
+	DDRD = 0x00; // setting group D to input
+	DDRA = 0xff; // setting group A to output
+	DDRE = 0xf0; // setting upper nibble of group E to output
+}
+
+int main(void)
+{
+    Port_init();
+	unsigned char FND_Print[4] = {0,}; // array to store numeric values to display at FND
+	
+    while (1) 
+    {
+		get_change();
+		Num_divide(FND_Print);
+		
+		PORTE = Port_fnd[0];
+		PORTA = Port_char[FND_Print[0]];
+		_delay_ms(5);
+
+		get_change();
+		Num_divide(FND_Print);
+		
+		PORTE = Port_fnd[1];
+		PORTA = Port_char[FND_Print[1]];
+		_delay_ms(5);
+
+		get_change();
+		Num_divide(FND_Print);
+				
+		PORTE = Port_fnd[2];
+		PORTA = Port_char[FND_Print[2]];
+		_delay_ms(5);
+		
+		get_change();
+		Num_divide(FND_Print);
+		
+		PORTE = Port_fnd[3];
+		PORTA = Port_char[FND_Print[3]];
+		_delay_ms(5);
+    }
+}
+
