@@ -1,0 +1,61 @@
+Px = [0 0 0 0 0 0 0 0 0 0];
+for n=1:100000
+    r = rand;
+    if (0<=r) && (r<=0.1)
+        Px(1)=Px(1)+1;
+    elseif (0.1<r) && (r<=0.2)
+        Px(2)=Px(2)+1;
+    elseif (0.2<r) && (r<=0.3)
+        Px(3)=Px(3)+1;
+    elseif (0.3<r) && (r<=0.4)
+        Px(4)=Px(4)+1;
+    elseif (0.4<r) && (r<=0.5)
+        Px(5)=Px(5)+1;
+    elseif (0.5<r) && (r<=0.6)
+        Px(6)=Px(6)+1;
+    elseif (0.6<r) && (r<=0.7)
+        Px(7)=Px(7)+1;
+    elseif (0.7<r) && (r<=0.8)
+        Px(8)=Px(8)+1;
+    elseif (0.8<r) && (r<=0.9)
+        Px(9)=Px(9)+1;
+    else
+        Px(10)=Px(10)+1;
+    end
+end
+
+k=[1:10];
+PTheo = [0 0 0 0 0 0 0 0 0 0];
+PTheo(k) = 1/10;
+Px_CDF = cumsum(Px/100000);
+PTheo_CDF = cumsum(PTheo);
+
+figure(1)
+subplot(311)
+bar(k,Px);
+xlabel('k');
+ylabel('# of samples');
+title('Histogram (10^6 samples)');
+axis([1,10,0,2*10^4]);
+
+subplot(312)
+stem(k,Px/100000,'*-');
+hold on;
+stem(k,PTheo,'o-');
+xlabel('k');
+ylabel('P[X=k]');
+title('PMF');
+axis([1,10,0,0.2]);
+legend('Empirical PMF','Theoretical PMF');
+grid on;
+
+subplot(313)
+stem(k,Px_CDF,'*-');
+hold on;
+stem(k,PTheo_CDF,'o-');
+xlabel('k');
+ylabel('P[X<=k]');
+title('CDF');
+axis([1,10,0,1]);
+legend('Empirical CDF','Theoretical CDF');
+grid on;
