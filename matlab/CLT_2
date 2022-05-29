@@ -1,0 +1,35 @@
+clc; clear all;
+
+figure(1)
+
+x=linspace(0,5);
+CDF_emp = (1/2)*(1+erf((x-5/2)*2/sqrt(10)));
+
+CDF_ber = zeros(6,1);
+CDF_ber(1) = factorial(5)/factorial(5)*(1/2)^5;
+for n=1:5
+    CDF_ber(n+1) = CDF_ber(n) + factorial(5)/(factorial(n)*factorial(5-n))*(1/2)^5;
+end
+n=1:6;
+
+plot(x,CDF_emp,'--r');
+hold on;
+stairs(n-1,CDF_ber,'-b');
+grid on;
+
+figure(2)
+
+x=linspace(0,25);
+CDF_emp = (1/2)*(1+erf((x-25/2)*2/(5*sqrt(2))));
+
+CDF_ber = zeros(26,1);
+CDF_ber(1) = factorial(25)/factorial(25)*(1/2)^25;
+for n=1:25
+    CDF_ber(n+1) = CDF_ber(n) + factorial(25)/(factorial(n)*factorial(25-n))*(1/2)^25;
+end
+n=1:26;
+
+plot(x,CDF_emp,'--r');
+hold on;
+stairs(n-1,CDF_ber,'-b');
+grid on;
