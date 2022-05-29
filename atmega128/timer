@@ -1,0 +1,212 @@
+/*
+ * homework3.c
+ *
+ * Created: 2022-05-20 오후 1:40:57
+ * Author : kkb99
+ */ 
+
+#define F_CPU 14.7456E6
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+
+// FND letter table, FND port pin
+unsigned char Port_char[] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xd8, 0x80, 0x90,
+							0xbf, 0xff, 0x86, 0xab, 0xa1}; // common anode 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -, (NULL), E, n, d
+unsigned int Port_fnd[] = {0x1f, 0x2f, 0x4f, 0x8f};
+
+unsigned int count = 0; // count number of overflow interrupt occurrences of Timer/Counter0
+unsigned int sum_num = 0; // Conversion result of input to decimal
+// 14745600 / 256 / 1024 = 56.25, Timer/Counter0 is 8bit -> 256, prescale : 1024(CS00, CS01, CS02 : 1, 1, 1)
+// overflow interrupt occurs every 1/56.25[s] -> 1s on approximately 56 occurrences
+unsigned int t = 56; 
+
+int key = 0; // Save the value entered with the keypad
+unsigned char mode = 0; // 0 : initial mode, a : time input mode, b : time counting mode
+
+// Timer/Counter 0 overflow ISR
+ISR(TIMER0_OVF_vect)
+{
+	count++;
+	if(count == t)
+	{
+		sum_num -= 1;
+		count = 0;
+	}
+}
+
+void Num_divide(unsigned char* divide_num)
+{
+	int buffer=0;
+	
+	divide_num[3] = sum_num/1000;
+	buffer= sum_num%1000;
+	divide_num[2] = buffer/100;
+	buffer= buffer%100;
+	divide_num[1] = buffer/10;
+	divide_num[0] = buffer%10;
+}
+//--------------------------------------------------------------
+
+int keyScan()
+{
+	int KeyBuf=20;
+	
+	PORTD=0xe0; _delay_us(1); // select first row
+	while(PIND&0x01)KeyBuf=1;
+	while(PIND&0x02)KeyBuf=2;
+	while(PIND&0x04)KeyBuf=3;
+	while(PIND&0x08)KeyBuf=10;
+	PORTD=0xf0; // clear first row
+	//
+	PORTD=0xd0; _delay_us(5); // select second row
+	while(PIND&0x01)KeyBuf=4; //
+	while(PIND&0x02)KeyBuf=5;
+	while(PIND&0x04)KeyBuf=6;
+	PORTD=0xf0; // clear second row
+	//
+	PORTD=0xb0; _delay_us(5); // select third row
+	while(PIND&0x01)KeyBuf=7;
+	while(PIND&0x02)KeyBuf=8;
+	while(PIND&0x04)KeyBuf=9;
+	PORTD=0xf0; // clear third row
+	//
+	PORTD=0x70; _delay_us(5); // select forth row
+	while(PIND&0x02)KeyBuf=0;
+	while(PIND&0x08)KeyBuf=13;
+	PORTD=0xf0; // clear forth row
+	
+	return KeyBuf; // no input, return 20
+}
+
+// Change output value/mode to FND depending on input value and timer status
+void get_Num(unsigned char* number, unsigned char condition)
+{
+	key=keyScan();
+	
+	if(key<10 && condition==1){ // Number can only be entered in mode a
+		if(number[3]==0){ 
+		// FND 4th (maximum digit) input only if there is no number entered
+		// ex)125 input notation 0001->0012->0125(Input number is filled from smallest digit)
+			number[3] = number[2];
+			number[2] = number[1];
+			number[1] = number[0];
+			number[0] = key;
+		}
+	}
+	else if(key==10){ // Switch to mode a if not mode a, hold mode if mode a
+		mode = 'a';
+	}
+	else if(key==13 && condition==1){ // Can switch from mode a to mode b only
+		mode = 'd';
+	}
+
+}
+//------------------------------------------------------------------
+
+// Convert input numbers to decimal
+void Num_Sumation(unsigned char* d_num)
+{
+	sum_num = d_num[3]*1000 + d_num[2]*100 + d_num[1]*10 + d_num[0];
+}
+
+// When the timer's down count is complete, mark 'End' in the FND
+void End_fnd(unsigned char* end_print)
+{
+	end_print[0] = 14;
+	end_print[1] = 13;
+	end_print[2] = 12;
+	end_print[3] = 11;
+}
+
+// Initialize previously used variables when timer downcount is complete
+void Init_variable()
+{
+	count = 0;
+	key = 0;
+}
+
+// set initial values of ports
+void Init_Port()
+{
+	DDRD = 0xf0; // 키패드
+	DDRB = 0xff; // FND 숫자 출력
+	DDRE = 0xf0; // FND 선택
+}
+
+void Init_Timer0()
+{
+	TIMSK = 0x01; // Timer/Counter0 normal mode operation (TOIE0 = 1)
+	TCNT0 = 0x00;
+	sei();
+}
+
+int main(void)
+{
+    Init_Port();
+	Init_Timer0();
+	
+	unsigned char case_check = 0;
+	unsigned char FND_Print[4] = {10, 10, 10, 10}; // initial FND ou '----'
+	
+    while (1) 
+    {
+		switch(mode)
+		{
+			case 0: // mode 0
+			{
+				get_Num(FND_Print, case_check);
+				break;
+			}
+			case 'a': // mode a
+			{
+				if(case_check != 1)
+				{
+					for(int i=0;i<4;i++) // initialization FND output (0000)
+					{
+						FND_Print[i] = 0;
+					}
+					case_check = 1;
+				}
+				get_Num(FND_Print, case_check);
+				Num_Sumation(FND_Print);
+				break;
+			}
+			case 'd': // mode d
+			{
+				case_check = 2;
+				if(sum_num != 0)
+				{
+					TCCR0 |= (1<<CS00)|(1<<CS01)|(1<<CS02);
+					Num_divide(FND_Print);
+				}
+				else
+				{
+					TCCR0 &= 0xf8; // cut-off clock source
+					End_fnd(FND_Print);
+					Init_variable();
+					get_Num(FND_Print, case_check); // check keypad (go to mode a)
+				}
+				break;
+			}
+		}
+
+		
+		PORTE = Port_fnd[0];
+		PORTB = Port_char[FND_Print[0]];
+		_delay_ms(5);
+
+		PORTE = Port_fnd[1];
+		PORTB = Port_char[FND_Print[1]];
+		_delay_ms(5);
+		
+		PORTE = Port_fnd[2];
+		PORTB = Port_char[FND_Print[2]];
+		_delay_ms(5);
+		
+		PORTE = Port_fnd[3];
+		PORTB = Port_char[FND_Print[3]];
+		_delay_ms(5);
+    }
+}
+
