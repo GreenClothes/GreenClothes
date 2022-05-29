@@ -1,0 +1,88 @@
+#define F_CPU 14.7456E6
+#include <avr/io.h>
+#include <util/delay.h>
+
+void LED_LShift(unsigned char LED)
+{	
+	unsigned char LShift_LED = 0;
+	unsigned int loop = 0;
+	
+	LShift_LED = LED;
+
+	for(loop=0;loop<4;loop++)
+	{
+		PORTB = LShift_LED;
+		_delay_ms(50);
+		
+		if(PIND == 0xFF)
+			return;
+		LShift_LED = (LShift_LED << 2) | 0x03;
+	}
+}
+
+void LED_RShift(unsigned char LED)
+{
+	unsigned char RShift_LED = 0;
+	unsigned int loop = 0;
+	
+	RShift_LED = LED;
+
+	for(loop=0;loop<4;loop++)
+	{
+		PORTB = RShift_LED;
+		_delay_ms(50);
+
+		if(PIND==0xFF)
+			return;
+		RShift_LED = (RShift_LED >> 2) | 0xC0;
+	}
+}
+
+void LED_OnOff()
+{
+	PORTB = 0xFF;
+	_delay_ms(50);
+	
+	PORTB = 0x00;
+	_delay_ms(50);
+}
+
+void LED_Switch()
+{
+	PORTB = 0xf0;
+	_delay_ms(50);
+	
+	if(PIND==0xFF)
+		return;
+	
+	PORTB = 0x0f;
+	_delay_ms(50);
+}
+
+void main()
+{
+	DDRD = 0x00;
+	DDRB = 0xff;
+	
+	while(1)
+	{
+		PORTB = 0xff;
+		
+		while(PIND==0xef)
+		{
+			LED_LShift(0xfe);
+		}
+		while(PIND==0xdf)
+		{
+			LED_RShift(0x7f);
+		}
+		while(PIND==0xbf)
+		{
+			LED_OnOff();
+		}
+		while(PIND==0x7f)
+		{
+			LED_Switch();
+		}
+	}
+}	
