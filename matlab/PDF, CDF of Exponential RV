@@ -1,0 +1,30 @@
+clear all; clc;
+
+x = linspace(0,5);
+
+fX_1 = exp(-x);
+fX_2 = 2*exp(-2*x);
+fX_3 = 3*exp(-3*x);
+FX_1 = 1-exp(-x);
+FX_2 = 1-exp(-2*x);
+FX_3 = 1-exp(-3*x);
+
+figure(1)
+plot(x,fX_1,'k-');
+hold on;
+plot(x,fX_2,'b--',x,fX_3,'r-.');
+xlabel('x');
+ylabel('PDF');
+legend('\lambda=1','\lambda=2','\lambda=3');
+grid on;
+axis([0 5 0 3]);
+
+figure(2)
+plot(x,FX_1,'k-');
+hold on;
+plot(x,FX_2,'b--',x,FX_3,'r-.');
+xlabel('x');
+ylabel('CDF');
+legend('\lambda=1','\lambda=2','\lambda=3');
+grid on;
+axis([0 5 0 1]);
