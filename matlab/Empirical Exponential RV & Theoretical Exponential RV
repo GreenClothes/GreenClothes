@@ -1,0 +1,33 @@
+U=rand(1,100000);
+X_PDF=-log(U);
+edges=[0:0.1:10];
+N_PDF=histcounts(X_PDF,edges);
+
+X_CDF=-log(1-U);
+N_CDF=histcounts(X_CDF,edges);
+N_CDF=cumsum(N_CDF);
+
+k=1:1:100;
+
+x = linspace(0,10,1000);
+fX = exp(-x);
+FX = 1-exp(-x);
+
+figure(1)
+subplot(211);
+bar((k-1)/10, N_PDF(k)/100000/0.1);
+hold on;
+plot(x,fX,'r-', 'LineWidth', 2);
+xlabel('x');
+ylabel('PDF');
+legend('Empirical PDF', 'Theoretical PDF');
+grid on;
+
+figure(1)
+subplot(212);
+bar((k-1)/10, N_CDF(k)/100000/0.1*0.1);
+hold on;
+plot(x,FX,'r-', 'LineWidth', 2);
+xlabel('x');
+ylabel('CDF');
+legend('Empirical CDF', 'Theoretical CDF');
