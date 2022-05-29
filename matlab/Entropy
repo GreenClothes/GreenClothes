@@ -1,0 +1,14 @@
+clear all; clc;
+
+p=linspace(0,1);
+
+H = -(1-p).*log(1-p)-p.*log(p);
+H(isnan(H)) = 0;
+
+figure(1)
+plot(p,H,'k');
+axis([0 1 0 0.7]);
+xlabel('p');
+ylabel('H(p)');
+legend('Entropy');
+grid on;
