@@ -1,0 +1,34 @@
+clc; clear all;
+
+figure(1)
+
+x=linspace(0,25);
+CDF_emp = (1+erf((x-5)/sqrt(10)))/2;
+
+CDF=0;
+for n=0:4
+    CDF = CDF+1/factorial(n).*exp(-x).*x.^n;
+end
+CDF_exp = 1-CDF;
+
+
+plot(x,CDF_emp,'--b');
+hold on;
+plot(x,CDF_exp,'-r');
+grid on;
+
+figure(2)
+
+x=linspace(20,80);
+CDF_emp = (1+erf((x-50)/sqrt(100)))/2;
+
+CDF=0;
+for n=0:49
+    CDF = CDF+1/factorial(n).*exp(-x).*x.^n;
+end
+CDF_exp = 1-CDF;
+
+plot(x,CDF_emp,'--b');
+hold on;
+plot(x,CDF_exp,'-r');
+grid on;
