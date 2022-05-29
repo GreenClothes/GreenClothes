@@ -1,0 +1,102 @@
+#define F_CPU 14.7456E6
+#include <avr/io.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
+
+// setting FND letter table, FND port pin
+unsigned char Port_char[] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xd8, 0x80, 0x90,
+							0x88, 0x83, 0xc4, 0xa1, 0x84, 0x8e}; // common anode
+unsigned int Port_fnd[] = {0x1f, 0x2f, 0x4f, 0x8f};
+
+unsigned int count = 0;
+
+// shifting low nibble LED of PORTB (PORTB.3->PORTB.0)
+ISR(INT0_vect)
+{
+	PORTB = 0xf7;
+	_delay_ms(30);
+	for(int i=0;i<4;i++)
+	{
+		PORTB = (PORTB >> 1);
+		_delay_ms(30);
+	}
+	PORTB = 0xff;
+}
+
+// shifting low nibble LED of PORTB (PORTB.0->PORTB.3)
+ISR(INT1_vect)
+{
+	PORTB = 0x0e;
+	_delay_ms(30);
+	for(int i=0;i<4;i++)
+	{
+		PORTB = (PORTB << 1) + 0x01;
+		_delay_ms(30);
+	}
+	PORTB = 0xff;
+}
+
+// increasing printed number at FND
+ISR(INT2_vect)
+{
+	if(count!=9999)
+		count++;
+}
+
+// decreasing printed number at FND
+ISR(INT3_vect)
+{
+	if(count!=0)
+		count--;
+}
+
+void Num_divide(unsigned char* divide_num)
+{
+	int buffer=0;
+	
+	divide_num[3] = count/1000;
+	buffer= count%1000;
+	divide_num[2] = buffer/100;
+	buffer= buffer%100;
+	divide_num[1] = buffer/10;
+	divide_num[0] = buffer%10;
+}
+
+void interrupt_init()
+{
+	DDRE = 0xf0; // setting upper nibble of group E to output
+	DDRB = 0x0f; // setting low nibble of group B to output
+	PORTB = 0xff; // settiing initial value of group B to 0xff (LED off)
+	DDRA = 0xff; // setting group A to output
+	EIMSK = 0x0f; // interrupt permission to INT3~0
+	EICRA = 0xeb; // INT3 : rising edge, INT2 : falling edge, INT1 : falling edge, INT0 : rising edge
+	sei(); // allow full interrupt
+}
+
+int main(void)
+{
+	unsigned char FND_Print[4] = {0,}; // array to store numeric values to display at FND
+    interrupt_init();
+	
+    while (1) 
+    {
+		Num_divide(FND_Print);
+		
+		PORTE = Port_fnd[0];
+		PORTA = Port_char[FND_Print[0]];
+		_delay_ms(5);
+
+		PORTE = Port_fnd[1];
+		PORTA = Port_char[FND_Print[1]];
+		_delay_ms(5);
+		
+		PORTE = Port_fnd[2];
+		PORTA = Port_char[FND_Print[2]];
+		_delay_ms(5);
+		
+		PORTE = Port_fnd[3];
+		PORTA = Port_char[FND_Print[3]];
+		_delay_ms(5);
+    }
+}
+
