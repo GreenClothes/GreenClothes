@@ -1,0 +1,115 @@
+clc;clear all;
+
+figure(1)
+subplot(221)
+j=100;
+
+S_X1 = zeros(j,1);
+S_X2 = zeros(j,1);
+
+for n=1:100
+    x=randn(j,1);
+    y=randn(j,1);
+    
+    for k=1:j
+        S_X1(n)=S_X1(n)+x(k);
+        S_X2(n)=S_X2(n)+y(k);
+    end
+end
+
+M_n_X1 = S_X1/j;
+M_n_X2 = S_X2/j;
+
+n=1:100;
+scatter(M_n_X1(n),M_n_X2(n));
+xlabel('x1');
+ylabel('x2');
+title('n=100');
+axis([-0.4 0.4 -0.4 0.4]);
+grid on;
+
+figure(1)
+subplot(222)
+j=1000;
+
+
+S_X1 = zeros(j,1);
+S_X2 = zeros(j,1);
+
+for n=1:100
+    x=randn(j,1);
+    y=randn(j,1);
+    
+    for k=1:j
+        S_X1(n)=S_X1(n)+x(k);
+        S_X2(n)=S_X2(n)+y(k);
+    end
+end
+
+M_n_X1 = S_X1/j;
+M_n_X2 = S_X2/j;
+
+n=1:j;
+scatter(M_n_X1(n),M_n_X2(n));
+axis([-0.4 0.4 -0.4 0.4]);
+xlabel('x1');
+ylabel('x2');
+title('n=1000');
+grid on;
+
+figure(1)
+subplot(223)
+j=10000;
+
+
+S_X1 = zeros(j,1);
+S_X2 = zeros(j,1);
+
+for n=1:100
+    x=randn(j,1);
+    y=randn(j,1);
+    
+    for k=1:j
+        S_X1(n)=S_X1(n)+x(k);
+        S_X2(n)=S_X2(n)+y(k);
+    end
+end
+
+M_n_X1 = S_X1/j;
+M_n_X2 = S_X2/j;
+
+n=1:100;
+scatter(M_n_X1(n),M_n_X2(n));
+xlabel('x1');
+ylabel('x2');
+title('n=10000');
+axis([-0.4 0.4 -0.4 0.4]);
+grid on;
+
+figure(1)
+subplot(224)
+j=100000;
+
+S_X1 = zeros(j,1);
+S_X2 = zeros(j,1);
+
+for n=1:100
+    x=randn(j,1);
+    y=randn(j,1);
+    
+    for k=1:j
+        S_X1(n)=S_X1(n)+x(k);
+        S_X2(n)=S_X2(n)+y(k);
+    end
+end
+
+M_n_X1 = S_X1/j;
+M_n_X2 = S_X2/j;
+
+n=1:100;
+scatter(M_n_X1(n),M_n_X2(n));
+xlabel('x1');
+ylabel('x2');
+title('n=100000');
+axis([-0.4 0.4 -0.4 0.4]);
+grid on;
