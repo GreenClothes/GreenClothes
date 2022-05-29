@@ -1,0 +1,23 @@
+k = [1:10];
+
+Px = [];
+Px(k) = 1/10;
+
+figure(1)
+subplot(121)
+stem(k,Px(k));
+xlabel('k');
+ylabel('P[X=k]');
+title('PMF');
+axis([1,10,0,0.3]);
+grid on;
+
+Px = cumsum(Px);
+
+subplot(122)
+stairs(k,Px);
+xlabel('k');
+ylabel('P[X<=k]');
+title('CDF');
+axis([1,10,0,1]);
+grid on;
