@@ -1,0 +1,14 @@
+x = [];
+x = randi([1 10], 1, 10000);
+
+y = [];
+
+for k=1:1:10
+    y(k)=nnz(x==k);
+end
+
+t=[1:10];
+
+figure(1)
+stem(t,y);
+legend('# of each integer');
